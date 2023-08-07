@@ -1,17 +1,16 @@
 {
-  "name": "autojs6-vscode-ext",
-  "displayName": "AutoJs6 VSCode Extension",
-  "description": "Debugger for AutoJs6",
+  "name": "obs-vscode-ext",
+  "displayName": "OBS VSCode Extension",
+  "description": "Debugger for OBS",
 
   "version": "1.0.6",
-  "requiredClientVersionName": "6.3.3",
-  "requiredClientVersionCode": "2046",
+  "requiredEngineVersion": "0.0.1",
 
-  "publisher": "003",
-  "icon": "assets/images/autojs6_material.png",
+  "publisher": "sososdk",
+  "icon": "assets/images/obs.png",
   "repository": {
     "type": "github",
-    "url": "http://vscext-project.autojs6.com"
+    "url": "https://github.com/open-book-source/open-book-source-VSCode-Extension"
   },
   "engines": {
     "vscode": "^1.34.0"
@@ -34,67 +33,67 @@
       {
         "command": "extension.viewDocument",
         "title": "查看在线文档 (View Online Document)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.connect",
         "title": "建立设备连接 (Connect)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.disconnectAll",
         "title": "断开所有连接 (Disconnect All)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.run",
         "title": "运行脚本 (Run)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.runOnDevice",
         "title": "指定设备运行 (Run On Device)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.stop",
         "title": "停止当前脚本 (Stop)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.stopAll",
         "title": "停止所有脚本 (Stop All)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.rerun",
         "title": "重新运行脚本 (Rerun)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.save",
         "title": "保存到所有设备 (Save)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.saveToDevice",
         "title": "保存到指定设备 (Save On Device)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.newProject",
         "title": "新建项目 (New Project)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.saveProject",
         "title": "保存项目到设备 (Save Project)",
-        "category": "AutoJs6"
+        "category": "OBS"
       },
       {
         "command": "extension.runProject",
         "title": "运行项目 (Run Project)",
-        "category": "AutoJs6"
+        "category": "OBS"
       }
     ],
     "keybindings": [

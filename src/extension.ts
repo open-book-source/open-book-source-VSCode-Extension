@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as util from './util';
 import * as querystring from 'querystring';
+import * as scriptUtil from './script';
 
 import i18n from './i18n';
 
@@ -35,7 +36,7 @@ const storageIpAddressBlacklist = [
 ];
 
 const LOOP_BACK: string = '127.0.0.1';
-const EXTENSION_NAME: string = 'AutoJs6 VSCode Extension';
+const EXTENSION_NAME: string = 'OBS VSCode Extension';
 const DEFAULT_QUICK_PICK_PLACEHOLDER = '输入或选择连接建立方式';
 const STRING_YES = '是 (Yes)';
 const STRING_NO = '否 (No)';
@@ -101,7 +102,7 @@ class AJHttpServer extends EventEmitter {
 
 export class Extension {
     private readonly context: vscode.ExtensionContext;
-    private readonly storageKey: string = 'autojs6.devices';
+    private readonly storageKey: string = 'obs.devices';
     readonly picker = {
         operations: {
             connect: '连接',
@@ -110,8 +111,8 @@ export class Extension {
         },
         commands: {
             'empty': '',
-            'c/s': 'AutoJs6 (客户端) > VSCode (服务端)',
-            's/c': 'AutoJs6 (服务端) < VSCode (客户端)',
+            'c/s': 'OBS (客户端) > VSCode (服务端)',
+            's/c': 'OBS (服务端) < VSCode (客户端)',
             'record': '本地 IP 地址记录',
         },
         agents: {
@@ -120,11 +121,11 @@ export class Extension {
         },
     };
     private readonly picks: { [prop in string]: vscode.QuickPickItem } = {
-        ajClientLan: this.newPicker('connect', 'c/s', 'lan', 'AutoJs6 作为客户端主动连接 VSCode (使用 IP 地址)'),
-        ajServerLan: this.newPicker('connect', 's/c', 'lan', 'VSCode 主动连接作为服务端的 AutoJs6 (使用 IP 地址)'),
-        ajServerAdb: this.newPicker('connect', 's/c', 'adb/usb', 'VSCode 主动连接作为服务端的 AutoJs6 (使用 USB 线缆)'),
+        ajClientLan: this.newPicker('connect', 'c/s', 'lan', 'OBS 作为客户端主动连接 VSCode (使用 IP 地址)'),
+        ajServerLan: this.newPicker('connect', 's/c', 'lan', 'VSCode 主动连接作为服务端的 OBS (使用 IP 地址)'),
+        ajServerAdb: this.newPicker('connect', 's/c', 'adb/usb', 'VSCode 主动连接作为服务端的 OBS (使用 USB 线缆)'),
         recordClear: this.newPicker('clear', 'record', null, '清除保存在本地的全部 IP 地址记录'),
-        recordPrefix: this.newPicker('record', 'empty', null, 'VSCode 使用 IP 地址 %s 主动连接作为服务端的 AutoJs6'),
+        recordPrefix: this.newPicker('record', 'empty', null, 'VSCode 使用 IP 地址 %s 主动连接作为服务端的 OBS'),
     };
     static readonly commands: Array<keyof Extension> = [
         'viewDocument', 'connect', 'disconnectAll', 'run', 'runOnDevice', 'stop',
@@ -149,7 +150,7 @@ export class Extension {
     }
 
     private static connectToLocalHint() {
-        vscode.window.showInformationMessage(`在 AutoJs6 侧拉菜单开启客户端模式并连接至 ${util.getNicAddress()}`);
+        vscode.window.showInformationMessage(`在设置开启客户端模式并连接至 ${util.getNicAddress()}`);
     }
 
     private newPicker(operation: string, command: string, agent: string, detail: string): vscode.QuickPickItem {
@@ -193,6 +194,16 @@ export class Extension {
                 logDebug(error);
             }
         }
+
+        // 将书源脚本合并到代码中
+        let meta = scriptUtil.parseMeta(script);
+        if (meta.script) {
+            let scriptPath = path.join(path.dirname(fileName), meta.script);
+            let code = fs.readFileSync(scriptPath, 'utf8');
+            
+            script = code + '\n' + script.replace(scriptUtil.METABLOCK_RE, '');
+        }
+
         client.sendCommand('run', {
             id: fileName,
             name: fileName,
@@ -255,7 +266,7 @@ export class Extension {
                     deviceChannel[device.deviceId] = devChn;
                 }
                 devChn.show(true);
-                vscode.window.showInformationMessage(`AutoJs6 设备接入: ${device}`);
+                vscode.window.showInformationMessage(`OBS 设备接入: ${device}`);
                 if (type === CONNECTION_TYPE_SERVER_ADB) {
                     connectedServerAdb.add(device.adbDeviceId);
                 } else if (type === CONNECTION_TYPE_SERVER_LAN) {
@@ -265,7 +276,7 @@ export class Extension {
                 logDebug(connectedServerLan);
             })
             .on('detach_device', (device: Device) => {
-                vscode.window.showInformationMessage(`AutoJs6 设备断开: ${device}`);
+                vscode.window.showInformationMessage(`OBS 设备断开: ${device}`);
                 connectedServerAdb.delete(device.adbDeviceId);
                 connectedServerLan.delete(device.host);
             })
@@ -377,8 +388,8 @@ export class Extension {
         if (!url) {
             let folders = vscode.workspace.workspaceFolders;
             if (!folders || folders.length === 0) {
-                // vscode.window.showInformationMessage('An opened AutoJs6 project is needed');
-                vscode.window.showInformationMessage('需要一个已打开的 AutoJs6 项目');
+                // vscode.window.showInformationMessage('An opened OBS project is needed');
+                vscode.window.showInformationMessage('需要一个已打开的 OBS 项目');
                 return null;
             }
             folder = folders[0].uri;
@@ -538,7 +549,7 @@ export class Extension {
         ]);
         let stdout = res.stdout.toString();
         let stderr = res.stderr.toString();
-        let errEnsureServerModeOn = '请确认 AutoJs6 侧拉菜单已开启 "服务端模式 (Server mode)"';
+        let errEnsureServerModeOn = '请确认设置中已开启 SOCKET 服务';
 
         logDebug('query result: stdout = %s, stderr = %s, result = ', stdout, stderr, res);
 
@@ -558,7 +569,7 @@ export class Extension {
                 let port = Device.defaultClientPort;
                 this.client.connectTo(input, port, CONNECTION_TYPE_SERVER_LAN)
                     .then(() => logDebug(`connected to ${input}:${port}`))
-                    .catch(() => vscode.window.showErrorMessage(`连接 AutoJs6 服务端失败 (${input}) (AutoJs6 需启用服务端模式)`));
+                    .catch(() => vscode.window.showErrorMessage(`连接服务端失败 (${input}) (需启用 SOCKET 服务)`));
             }
         });
     }
@@ -603,7 +614,7 @@ export class Extension {
             }
             return o;
         });
-        const commands = [ this.picks.ajClientLan, this.picks.ajServerLan, this.picks.ajServerAdb ];
+        const commands = [ /* this.picks.ajClientLan, */ this.picks.ajServerLan, this.picks.ajServerAdb ];
 
         this.showQuickPickForConnectionHomepage(commands).then((cmd) => {
             switch (cmd) {
@@ -654,10 +665,10 @@ export class Extension {
                 }
                 this.client.connectTo(host, port, CONNECTION_TYPE_SERVER_LAN).catch((e) => {
                     logDebug(e);
-                    vscode.window.showErrorMessage(`连接 AutoJs6 服务端失败 (${host}) (AutoJs6 需启用服务端模式)`);
+                    vscode.window.showErrorMessage(`连接服务端失败 (${host}) (需启用服务端模式)`);
                 });
             } else {
-                vscode.window.showErrorMessage(`连接 AutoJs6 服务端失败, 无法解析主机地址 ${cmd}`);
+                vscode.window.showErrorMessage(`连接服务端失败, 无法解析主机地址 ${cmd}`);
             }
         }
     }
@@ -678,9 +689,6 @@ export class Extension {
                 ];
 
                 disposables.push(
-                    // input.onDidAccept(() => {
-                    //     logDebug(input.value)
-                    // }),
                     input.onDidChangeSelection((items) => {
                         const item = items[0];
                         resolve(item.label);
@@ -690,17 +698,6 @@ export class Extension {
                         resolve(undefined);
                         input.dispose();
                     }),
-                    // input.onDidChangeActive((quickItems) => {
-                    //     const label = quickItems[0].label;
-                    //     logDebug(label);
-                    //     const prefixRecord = '[ 记录 ] - ';
-                    //     const prefixDefault = DEFAULT_QUICK_PICK_PLACEHOLDER;
-                    //     if (label.startsWith(prefixRecord)) {
-                    //         input.placeholder = `使用局域网连接至 AutoJs6 服务端 (${label.slice(prefixRecord.length)})`;
-                    //     } else {
-                    //         input.placeholder = prefixDefault;
-                    //     }
-                    // }),
                     input.onDidTriggerButton((item) => {
                         if (item === pickButtons.close) {
                             input.hide();
@@ -757,8 +754,8 @@ export class Extension {
         try {
             return await new Promise<string | T | T[] | undefined>((resolve, reject) => {
                 const input = vscode.window.createQuickPick();
-                input.title = `连接到 AutoJs6 服务端`;
-                input.placeholder = `输入或选择 AutoJs6 服务端 IP 地址, 按回车 (Enter) 键建立连接`;
+                input.title = `连接到服务端`;
+                input.placeholder = `输入或选择服务端 IP 地址, 按回车 (Enter) 键建立连接`;
                 input.items = commands;
                 input.buttons = [
                     ...[],
@@ -799,7 +796,7 @@ export class Extension {
         try {
             return await new Promise<string | T | T[] | undefined>((resolve, reject) => {
                 const input = vscode.window.createQuickPick();
-                input.title = `连接到 AutoJs6 服务端`;
+                input.title = `连接到服务端`;
                 input.placeholder = `输入或选择需要连接的设备, 按回车 (Enter) 键建立连接`;
                 input.items = commands;
                 input.buttons = [
@@ -837,13 +834,12 @@ export class Extension {
     }
 
     viewDocument() {
-        vscode.env.openExternal(vscode.Uri.parse('https://docs.autojs6.com/'));
+        vscode.env.openExternal(vscode.Uri.parse('https://open-book-source.github.io/docs/apis'));
     }
 
     disconnectAll() {
         this.client.disconnect();
-        vscode.window.showInformationMessage('AutoJs6 已断开所有连接');
-        // vscode.window.showInformationMessage('All connections to AutoJs6 disconnected');
+        vscode.window.showInformationMessage('已断开所有连接');
     }
 
     run(url?) {

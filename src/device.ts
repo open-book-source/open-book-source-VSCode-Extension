@@ -12,24 +12,22 @@ import { CONNECTION_TYPE_CLIENT_LAN, CONNECTION_TYPE_SERVER_ADB, CONNECTION_TYPE
 let packageJson: string = fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf8');
 let projectPackage = JSON.parse(packageJson);
 
-export const REQUIRED_AUTOJS6_VERSION_NAME = projectPackage.requiredClientVersionName;
-export const REQUIRED_AUTOJS6_VERSION_CODE = parseInt(projectPackage.requiredClientVersionCode) || -1;
+export const REQUIRED_ENGINE_VERSION = projectPackage.requiredEngineVersion;
 
-const SERVER_HEADER_SIZE = 16;
-const CLIENT_HEADER_SIZE = 8;
+const HEADER_SIZE = 6;
 
 const TYPE_JSON = 1;
 const TYPE_BYTES = 2;
 
-const LISTENING_PORT = 6347;
-const CLIENT_PORT = 7347;
-const CLIENT_ADB_SERVER_PORT = 20347;
-export const HTTP_SERVER_PORT = 10347;
+const SOCKET_SERVER_PORT = 8347;
+export const HTTP_SERVER_PORT = 8348;
+
+const CLIENT_ADB_SERVER_PORT = 9347;
+const SERVER_ADB_SERVER_PORT = 9348;
 const HANDSHAKE_TIMEOUT = 5e3;
 
 export class Device extends events.EventEmitter {
 
-    private versionCode = 0;
     private id = 1;
     private name: string;
     private version: string;
@@ -42,7 +40,7 @@ export class Device extends events.EventEmitter {
     host: string = null;
     isNormallyClosed: boolean = false;
 
-    static defaultClientPort: number = CLIENT_PORT;
+    static defaultClientPort: number = SERVER_ADB_SERVER_PORT;
     static defaultAdbServerPort: number = CLIENT_ADB_SERVER_PORT;
 
     constructor(connection: Socket) {
@@ -56,13 +54,13 @@ export class Device extends events.EventEmitter {
 
             this.isAttached = true;
             this.name = data.device_name || 'unknown device';
-            this.version = data.app_version;
-            this.versionCode = parseInt(data.app_version_code);
-            if (this.versionCode < REQUIRED_AUTOJS6_VERSION_CODE) {
-                let releasesUrl = 'https://github.com/SuperMonster003/AutoJs6/releases/';
-                const errMessage = `无法建立连接, 请确认 AutoJs6 版本不低于 ${REQUIRED_AUTOJS6_VERSION_NAME}`;
+            this.version = data.engine_version;
+            // TODO 判断引擎版本, 是否支持该版本
+            if (false) {
+                let url = '引擎版本链接';
+                const errMessage = `无法建立连接, 请确认引擎版本不低于 ${REQUIRED_ENGINE_VERSION}`;
                 vscode.window.showErrorMessage(errMessage, '查看所有项目版本')
-                    .then(choice => choice && vscode.env.openExternal(vscode.Uri.parse(releasesUrl)));
+                    .then(choice => choice && vscode.env.openExternal(vscode.Uri.parse(url)));
                 this.sendHello(errMessage);
                 this.connection.destroy();
                 this.connection = null;
@@ -92,38 +90,26 @@ export class Device extends events.EventEmitter {
         logDebug('## [m] Device.sendUTF8');
 
         let bytes: Buffer = Buffer.from(JSON.stringify(data), 'utf-8');
-        let string = buffToString(bytes);
-
-        let headerBuffer = Buffer.allocUnsafe(SERVER_HEADER_SIZE);
-        headerBuffer.write(String(string.length), 0);
-        headerBuffer.write(String(TYPE_JSON), SERVER_HEADER_SIZE - 2);
-
+        let headerBuffer = Buffer.allocUnsafe(HEADER_SIZE);
+        headerBuffer.writeInt32BE(bytes.length, 0);
+        headerBuffer.writeInt16BE(TYPE_JSON, 4);
         this.connection.write(headerBuffer);
-        this.connection.write(string);
-        // this.connection.write('\r\n');
+        this.connection.write(bytes);
 
-        logDebug('## Written json ok: ' + string);
         logDebug('## Written json length: ' + bytes.length);
-        logDebug('## Written json string length: ' + string.length);
     }
 
     sendBytes(bytes: Buffer) {
         logDebug('## [m] Device.sendBytes');
 
-        let string = bytes.toString('latin1');
-
-        let headerBuffer = Buffer.allocUnsafe(SERVER_HEADER_SIZE);
-        headerBuffer.write(String(string.length), 0);
-        headerBuffer.write(String(TYPE_BYTES), SERVER_HEADER_SIZE - 2);
+        let headerBuffer = Buffer.allocUnsafe(HEADER_SIZE);
+        headerBuffer.writeInt32BE(bytes.length, 0);
+        headerBuffer.writeInt16BE(TYPE_BYTES, 4);
 
         this.connection.write(headerBuffer);
-        this.connection.write(string);
-        // this.connection.write('\r\n');
+        this.connection.write(bytes);
 
-        logDebug(bytes);
-        logDebug('## Written bytes ok: ' + string);
         logDebug('## Written bytes length: ' + bytes.length);
-        logDebug('## Written bytes string length: ' + string.length);
     }
 
     sendHello(err?: string) {
@@ -171,8 +157,8 @@ export class Device extends events.EventEmitter {
                 let expectedChunkLen = ( /* @IIFE */ () => {
                     if (this.isLastDataComplete) {
                         this.parseHeader(chunk);
-                        offset += CLIENT_HEADER_SIZE;
-                        return CLIENT_HEADER_SIZE + this.parsedDataLength;
+                        offset += HEADER_SIZE;
+                        return HEADER_SIZE + this.parsedDataLength;
                     }
                     return this.parsedDataLength - this.getJointDataLength();
                 })();
@@ -202,7 +188,7 @@ export class Device extends events.EventEmitter {
             },
             parseHeader(chunk: Buffer) {
                 this.parsedDataLength = chunk.readInt32BE(0);
-                this.parsedDataType = chunk.readInt32BE(4);
+                this.parsedDataType = chunk.readInt8(4);
                 logDebug(`dataLength: ${this.parsedDataLength}, dataType: ${this.parsedDataType}`);
             },
             parseFullData(parser: (dataType: number, data: Buffer) => void) {
@@ -292,8 +278,8 @@ export class Devices extends events.EventEmitter {
             this.accept(socket);
         });
         Devices.instance = this;
-        this.serverSocket.listen(LISTENING_PORT, () => {
-            logDebug(`server listening on port ${LISTENING_PORT}`);
+        this.serverSocket.listen(SOCKET_SERVER_PORT, () => {
+            logDebug(`server listening on port ${SOCKET_SERVER_PORT}`);
         });
     }
 
@@ -468,8 +454,7 @@ export interface LogData {
 interface HelloData {
     device_id: string;
     device_name: string;
-    app_version: string;
-    app_version_code: string;
+    engine_version: string;
 }
 
 interface CommandParam {
