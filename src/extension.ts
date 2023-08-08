@@ -195,13 +195,26 @@ export class Extension {
             }
         }
 
-        // 将书源脚本合并到代码中
         let meta = scriptUtil.parseMeta(script);
+        // 将书源脚本合并到代码中
         if (meta.script) {
             let scriptPath = path.join(path.dirname(fileName), meta.script);
             let code = fs.readFileSync(scriptPath, 'utf8');
-            
+
             script = code + '\n' + script.replace(scriptUtil.METABLOCK_RE, '');
+        } else if (meta.name && meta.domain) {
+            let testPath: string;
+            if (meta.testScript) {
+                testPath = path.join(path.dirname(fileName), meta.testScript);
+            } else {
+                testPath = path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, 'test', 'default.js');
+            }
+            try {
+                let code = fs.readFileSync(testPath, 'utf8');
+                script = script + '\n' + code;
+            } catch (error) {
+                logDebug(error);
+            }
         }
 
         client.sendCommand('run', {
@@ -239,10 +252,10 @@ export class Extension {
 
                 for (let i = 0; i < storageDataRaw.length; i += 1) {
                     let data = storageDataRaw[i];
-                    let [ ip ] = data.split('|');
+                    let [ip] = data.split('|');
                     ip = ip.replace(prefixRecord, '');
                     if (ip === newDeviceIp) {
-                        let newData = [ ip, Date.now() ].join('|');
+                        let newData = [ip, Date.now()].join('|');
                         storageDataRaw.splice(i, 1);
                         storageDataRaw.unshift(newData);
                         this.storage.update(this.storageKey, storageDataRaw);
@@ -255,7 +268,7 @@ export class Extension {
                 }
                 if (!isUpdated) {
                     if (!storageIpAddressBlacklist.includes(newDeviceIp)) {
-                        storageDataRaw.unshift([ newDeviceIp, Date.now() ].join('|'));
+                        storageDataRaw.unshift([newDeviceIp, Date.now()].join('|'));
                         this.storage.update(this.storageKey, storageDataRaw);
                     }
                 }
@@ -352,7 +365,7 @@ export class Extension {
             o[n.substring(p, k)] = j == -1 ? n.substring(k + 1, i) : n.substring(k + 1, j);
             p = j + 1;
         }
-        let res = this.adb.exec([ '-s', o.id, 'shell', 'getprop', 'ro.product.brand' ]).stdout;
+        let res = this.adb.exec(['-s', o.id, 'shell', 'getprop', 'ro.product.brand']).stdout;
         if (res) {
             o.brand = res.toString().trim();
             o.name = `${o.brand} ${o.model} (${o.id})`;
@@ -412,7 +425,7 @@ export class Extension {
             return;
         }
         let commands = Array.from(devices.entries()).map((entry) => {
-            let [ summary, deviceInfo ] = entry;
+            let [summary, deviceInfo] = entry;
             return {
                 label: summary.toString(),
                 detail: `型号: ${deviceInfo.model}, 产品名称: ${deviceInfo['product']}`,
@@ -426,21 +439,21 @@ export class Extension {
             if (!dev) {
                 return;
             }
-            let ports = [ {
+            let ports = [{
                 src: yield this.findAvailPorts(),
                 dst: Device.defaultClientPort,
             },
-                {
-                    src: yield this.findAvailPorts(),
-                    dst: Device.defaultAdbServerPort,
-                },
+            {
+                src: yield this.findAvailPorts(),
+                dst: Device.defaultAdbServerPort,
+            },
             ];
 
             try {
                 logDebug(`adb device id: ${dev.id}`);
                 ports.forEach((port) => {
                     logDebug(`got an adb source port: ${port.src}`);
-                    this.adb.execOrThrow([ '-s', dev.id, 'forward', 'tcp:' + port.src, 'tcp:' + port.dst ]);
+                    this.adb.execOrThrow(['-s', dev.id, 'forward', 'tcp:' + port.src, 'tcp:' + port.dst]);
                 });
 
                 let idTimeout = setTimeout(() => this.onAdbDeviceConnectTimeout(dev), 5e3);
@@ -455,7 +468,7 @@ export class Extension {
     }
 
     private listAdbDevices(): Map<string, DeviceInfo> {
-        let res: SpawnSyncReturns<Buffer> = this.adb.exec([ 'devices', '-l' ]);
+        let res: SpawnSyncReturns<Buffer> = this.adb.exec(['devices', '-l']);
         if (res.pid === 0) {
             vscode.window.showErrorMessage('ADB 可能未安装或未被正确配置', '查看如何配置 ADB').then((choice) => {
                 choice && vscode.env.openExternal(vscode.Uri.parse('https://segmentfault.com/a/1190000021822394'));
@@ -503,7 +516,7 @@ export class Extension {
             return async (port_info?) => {
                 let ports;
                 if (port_info) {
-                    ports = typeof port_info.port === 'number' ? [ port_info.port ] : port_info.port;
+                    ports = typeof port_info.port === 'number' ? [port_info.port] : port_info.port;
                 }
                 if (itv_id === undefined) {
                     itv_id = setInterval(() => {
@@ -530,7 +543,7 @@ export class Extension {
                         cache.young.add(parsed_port);
                         return parsed_port;
                     } catch (t) {
-                        if (![ 'EADDRINUSE', 'EACCES' ].includes(t.code) && !(t instanceof Err)) {
+                        if (!['EADDRINUSE', 'EACCES'].includes(t.code) && !(t instanceof Err)) {
                             throw t;
                         }
                     }
@@ -582,7 +595,7 @@ export class Extension {
 
         for (let i = 0; i < ipAddressRecords.length; i += 1) {
             let data = ipAddressRecords[i];
-            let [ ip ] = data.split('|');
+            let [ip] = data.split('|');
             ip = ip.replace(prefixRecord, '');
             if (storageIpAddressBlacklist.includes(ip)) {
                 ipAddressRecords.splice(i--, 1);
@@ -595,7 +608,7 @@ export class Extension {
         }
 
         ipAddressRecords = ipAddressRecords.map((data: string) => {
-            let [ ip, ts ] = data.split('|');
+            let [ip, ts] = data.split('|');
             let o: vscode.QuickPickItem = {
                 label: ip.startsWith(prefixRecord) ? ip : `${prefixRecord}${ip}`,
             };
@@ -614,7 +627,7 @@ export class Extension {
             }
             return o;
         });
-        const commands = [ /* this.picks.ajClientLan, */ this.picks.ajServerLan, this.picks.ajServerAdb ];
+        const commands = [ /* this.picks.ajClientLan, */ this.picks.ajServerLan, this.picks.ajServerAdb];
 
         this.showQuickPickForConnectionHomepage(commands).then((cmd) => {
             switch (cmd) {
@@ -685,7 +698,7 @@ export class Extension {
                     ...[],
                     ...[],
                     ...[],
-                    ...[ pickButtons.close ],
+                    ...[pickButtons.close],
                 ];
 
                 disposables.push(
@@ -718,12 +731,12 @@ export class Extension {
                 const input = vscode.window.createQuickPick();
                 input.title = title;
                 input.placeholder = DEFAULT_QUICK_PICK_PLACEHOLDER;
-                input.items = [ { label: STRING_YES }, { label: STRING_NO } ];
+                input.items = [{ label: STRING_YES }, { label: STRING_NO }];
                 input.buttons = [
                     ...[],
                     ...[],
                     ...[],
-                    ...[ pickButtons.close ],
+                    ...[pickButtons.close],
                 ];
 
                 disposables.push(
@@ -761,7 +774,7 @@ export class Extension {
                     ...[],
                     ...[],
                     ...[],
-                    ...[ pickButtons.close ],
+                    ...[pickButtons.close],
                 ];
 
                 disposables.push(
@@ -803,7 +816,7 @@ export class Extension {
                     ...[], // ...[QuickInputButtons.Back],
                     ...[],
                     ...[],
-                    ...[ pickButtons.close ],
+                    ...[pickButtons.close],
                 ];
 
                 disposables.push(

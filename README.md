@@ -190,3 +190,19 @@
     - `Auto.js VSCode 开发插件 (二次开发项目)`
 * [Auto.js-VSCode-Extension](https://github.com/kkevsekk1/Auto.js-VSCode-Extension) { author: [kkevsekk1](https://github.com/kkevsekk1) }
     - `Auto.js VSCode 开发插件 (二次开发项目)`
+
+### 本地打包
+
+安装打包工具:
+```shell
+npm i vsce -g
+```
+
+打包:
+```shell
+vsce package
+```
+
+安装:
+
+从 `vscode` 扩展的右上角选择 Install from VSIX 安装.
