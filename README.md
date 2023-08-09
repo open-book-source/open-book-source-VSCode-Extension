@@ -205,4 +205,11 @@ vsce package
 
 安装:
 
-从 `vscode` 扩展的右上角选择 Install from VSIX 安装.
+- 从 `vscode` 扩展的右上角选择 Install from VSIX 安装. (我使用这个方式安装时, 每次重启之后插件都不见了)
+
+- 使用命令安装
+
+  Macos:
+  ```shell
+  /vscode app path/Contents/Resources/app/bin/code --install-extension vscode-ext.vsix
+  ```
