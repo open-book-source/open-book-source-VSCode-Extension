@@ -28,8 +28,8 @@ for (const file of sourceFiles) {
     });
 }
 const repository = {
-    author: 'Open Book Source',
-    homepage: 'https://github.com/open-book-source/booksource-third-party',
+    author: '[Author]',
+    homepage: 'https://github.com/[user]/[repo]',
     sources: sources,
 };
 
