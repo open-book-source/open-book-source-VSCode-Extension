@@ -476,7 +476,7 @@ export class Extension {
             return null;
         }
         let map = new Map<string, DeviceInfo>();
-        res.stdout.toString().split('\r\n').forEach((dev) => {
+        res.stdout.toString().split(/\r?\n/).forEach((dev) => {
             let dev_info = this.matchDevice(dev);
             if (dev_info !== null) {
                 map.set(dev_info.name, dev_info);
