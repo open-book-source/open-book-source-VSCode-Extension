@@ -36,7 +36,7 @@ const storageIpAddressBlacklist = [
 ];
 
 const LOOP_BACK: string = '127.0.0.1';
-const EXTENSION_NAME: string = 'OBS VSCode Extension';
+const EXTENSION_NAME: string = 'OpenSourceScripts VSCode Extension';
 const DEFAULT_QUICK_PICK_PLACEHOLDER = '输入或选择连接建立方式';
 const STRING_YES = '是 (Yes)';
 const STRING_NO = '否 (No)';
@@ -102,7 +102,7 @@ class AJHttpServer extends EventEmitter {
 
 export class Extension {
     private readonly context: vscode.ExtensionContext;
-    private readonly storageKey: string = 'obs.devices';
+    private readonly storageKey: string = 'OpenSourceScripts.devices';
     readonly picker = {
         operations: {
             connect: '连接',
@@ -111,8 +111,8 @@ export class Extension {
         },
         commands: {
             'empty': '',
-            'c/s': 'OBS (客户端) > VSCode (服务端)',
-            's/c': 'OBS (服务端) < VSCode (客户端)',
+            'c/s': 'OpenSourceScripts (客户端) > VSCode (服务端)',
+            's/c': 'OpenSourceScripts (服务端) < VSCode (客户端)',
             'record': '本地 IP 地址记录',
         },
         agents: {
@@ -121,11 +121,11 @@ export class Extension {
         },
     };
     private readonly picks: { [prop in string]: vscode.QuickPickItem } = {
-        ajClientLan: this.newPicker('connect', 'c/s', 'lan', 'OBS 作为客户端主动连接 VSCode (使用 IP 地址)'),
-        ajServerLan: this.newPicker('connect', 's/c', 'lan', 'VSCode 主动连接作为服务端的 OBS (使用 IP 地址)'),
-        ajServerAdb: this.newPicker('connect', 's/c', 'adb/usb', 'VSCode 主动连接作为服务端的 OBS (使用 USB 线缆)'),
+        ajClientLan: this.newPicker('connect', 'c/s', 'lan', 'OpenSourceScripts 作为客户端主动连接 VSCode (使用 IP 地址)'),
+        ajServerLan: this.newPicker('connect', 's/c', 'lan', 'VSCode 主动连接作为服务端的 OpenSourceScripts (使用 IP 地址)'),
+        ajServerAdb: this.newPicker('connect', 's/c', 'adb/usb', 'VSCode 主动连接作为服务端的 OpenSourceScripts (使用 USB 线缆)'),
         recordClear: this.newPicker('clear', 'record', null, '清除保存在本地的全部 IP 地址记录'),
-        recordPrefix: this.newPicker('record', 'empty', null, 'VSCode 使用 IP 地址 %s 主动连接作为服务端的 OBS'),
+        recordPrefix: this.newPicker('record', 'empty', null, 'VSCode 使用 IP 地址 %s 主动连接作为服务端的 OpenSourceScripts'),
     };
     static readonly commands: Array<keyof Extension> = [
         'viewDocument', 'connect', 'disconnectAll', 'run', 'runOnDevice', 'stop',
@@ -279,7 +279,7 @@ export class Extension {
                     deviceChannel[device.deviceId] = devChn;
                 }
                 devChn.show(true);
-                vscode.window.showInformationMessage(`OBS 设备接入: ${device}`);
+                vscode.window.showInformationMessage(`OpenSourceScripts 设备接入: ${device}`);
                 if (type === CONNECTION_TYPE_SERVER_ADB) {
                     connectedServerAdb.add(device.adbDeviceId);
                 } else if (type === CONNECTION_TYPE_SERVER_LAN) {
@@ -289,7 +289,7 @@ export class Extension {
                 logDebug(connectedServerLan);
             })
             .on('detach_device', (device: Device) => {
-                vscode.window.showInformationMessage(`OBS 设备断开: ${device}`);
+                vscode.window.showInformationMessage(`OpenSourceScripts 设备断开: ${device}`);
                 connectedServerAdb.delete(device.adbDeviceId);
                 connectedServerLan.delete(device.host);
             })
@@ -401,8 +401,8 @@ export class Extension {
         if (!url) {
             let folders = vscode.workspace.workspaceFolders;
             if (!folders || folders.length === 0) {
-                // vscode.window.showInformationMessage('An opened OBS project is needed');
-                vscode.window.showInformationMessage('需要一个已打开的 OBS 项目');
+                // vscode.window.showInformationMessage('An opened OpenSourceScripts project is needed');
+                vscode.window.showInformationMessage('需要一个已打开的 OpenSourceScripts 项目');
                 return null;
             }
             folder = folders[0].uri;

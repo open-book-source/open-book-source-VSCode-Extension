@@ -1,16 +1,16 @@
 {
-  "name": "obs-vscode-ext",
-  "displayName": "OBS VSCode Extension",
-  "description": "Debugger for OBS",
+  "name": "open-source-scripts-vscode-ext",
+  "displayName": "OpenSourceScripts VSCode Extension",
+  "description": "Debugger for Open Source Scripts",
 
   "version": "1.0.6",
   "requiredEngineVersion": "0.0.1",
 
   "publisher": "sososdk",
-  "icon": "assets/images/obs.png",
+  "icon": "assets/images/oss.png",
   "repository": {
     "type": "github",
-    "url": "https://github.com/open-book-source/open-book-source-VSCode-Extension"
+    "url": "https://github.com/open-source-scripts/open-source-scripts-VSCode-Extension"
   },
   "engines": {
     "vscode": "^1.34.0"
@@ -33,67 +33,67 @@
       {
         "command": "extension.viewDocument",
         "title": "查看在线文档 (View Online Document)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.connect",
         "title": "建立设备连接 (Connect)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.disconnectAll",
         "title": "断开所有连接 (Disconnect All)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.run",
         "title": "运行脚本 (Run)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.runOnDevice",
         "title": "指定设备运行 (Run On Device)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.stop",
         "title": "停止当前脚本 (Stop)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.stopAll",
         "title": "停止所有脚本 (Stop All)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.rerun",
         "title": "重新运行脚本 (Rerun)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.save",
         "title": "保存到所有设备 (Save)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.saveToDevice",
         "title": "保存到指定设备 (Save On Device)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.newProject",
         "title": "新建项目 (New Project)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.saveProject",
         "title": "保存项目到设备 (Save Project)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       },
       {
         "command": "extension.runProject",
         "title": "运行项目 (Run Project)",
-        "category": "OBS"
+        "category": "OpenSourceScripts"
       }
     ],
     "keybindings": [
