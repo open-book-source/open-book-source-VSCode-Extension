@@ -16,7 +16,7 @@
 // @function      toc
 // @function      chapter
 // @function      synchronization
-// @function      authorization
+// @function      configure
 // @function      profile
 // @function      author
 // @function      schedules
@@ -224,37 +224,38 @@ async function synchronization(bid, cid) {
 }
 
 /**
- * 授权
+ * 配置扩展
  */
-async function authorization() {
-    // 接口登录 和 网页登录选择其中一种即可.
-
-    // 接口登录
-    {
-        let response = await UI.authorization({});
-        // 判断是否已登录, 并保存相关信息
-    }
-
-    // 网页登录
-    {
-        let response = await UI.authorization('登录链接', 'cookies 域名', {});
-        // 判断是否已登录, 并保存相关信息
-    }
-    return false;
-}
-
-/**
- * 取消授权
- */
-async function unauthorization() {
-    // ...
-}
-
-/**
- * 是否已授权
- */
-async function authenticated() {
-    // ...
+async function configure() {
+    let inputs = {
+        log_level: {
+            'type': 'choice',
+            'description': 'Select Level',
+            'required': true,
+            'default': 'warning',
+            'options': [
+                'info', 'debug', 'warning', 'error'
+            ]
+        },
+        auth_token: {
+            'type': 'string',
+            'description': 'Input your auth token',
+            'required': true
+        },
+        tags: {
+            'type': 'boolean',
+            'description': 'Enable tags',
+            'required': true
+        },
+        port: {
+            'type': 'number',
+            'description': 'Input port',
+            'required': true,
+            'default': '9090'
+        }
+    };
+    let response = await UI.configure(inputs);
+    // 判断配置信息, 并保存相关信息
 }
 
 /**
@@ -322,7 +323,6 @@ async function schedules() {
             cron: "0 0 12 * * ?",
             enabled: await Storage.get('schedule_checkin') ?? true,
             logs: await Storage.get('schedule_checkin_logs'),
-            authorization: true
         },
         // ...
     ];
